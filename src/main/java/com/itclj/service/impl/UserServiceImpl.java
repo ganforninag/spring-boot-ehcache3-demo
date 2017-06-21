@@ -2,9 +2,16 @@ package com.itclj.service.impl;
 
 import com.itclj.model.UserBean;
 import com.itclj.service.UserService;
+import java.util.concurrent.TimeUnit;
+import javax.cache.CacheManager;
+import javax.cache.annotation.CacheResult;
+import javax.cache.configuration.MutableConfiguration;
+import javax.cache.expiry.Duration;
+import javax.cache.expiry.TouchedExpiryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -15,28 +22,42 @@ import java.util.Date;
 @Service("userService")
 public class UserServiceImpl implements UserService {
 
-    Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+  Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
-    UserBean userBean;
-
-    UserServiceImpl() {
-        userBean = new UserBean();
-        userBean.setBirthday(new Date());
-        userBean.setId(123L);
-        userBean.setName("张山");
-    }
-
+  @Component
+  public static class CachingSetup implements JCacheManagerCustomizer
+  {
     @Override
-    @Cacheable(cacheNames = "users",key = "'userid'+#id")
-    public UserBean getById(Long id) {
-        logger.info("Get User By Id:{}", id);
-        return this.userBean;
+    public void customize(CacheManager cacheManager)
+    {
+      cacheManager.createCache("users", new MutableConfiguration<>()
+          .setExpiryPolicyFactory(TouchedExpiryPolicy.factoryOf(new Duration(TimeUnit.SECONDS, 10)))
+          .setStoreByValue(false)
+          .setStatisticsEnabled(true));
     }
+  }
 
-    @Override
-    @Cacheable(cacheNames = "users",key = "'username'+#name")
-    public UserBean getByName(String name) {
-        logger.info("Get User By name:{}", name);
-        return userBean;
-    }
+
+  UserBean userBean;
+
+  UserServiceImpl() {
+    userBean = new UserBean();
+    userBean.setBirthday(new Date());
+    userBean.setId(123L);
+    userBean.setName("张山");
+  }
+
+  @Override
+  @CacheResult
+  public UserBean getById(Long id) {
+    logger.info("Get User By Id:{}", id);
+    return this.userBean;
+  }
+
+  @Override
+  @CacheResult(cacheName = "users")
+  public UserBean getByName(String name) {
+    logger.info("-------------------------Get User By name:{}", name);
+    return userBean;
+  }
 }

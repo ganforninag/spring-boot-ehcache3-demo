@@ -31,7 +31,7 @@ public class UserServiceTest {
         for(int n=0;n<5;n++){
             UserBean userBean=userService.getByName("王五");
             logger.info("========get result:{}",userBean.toString());
-            logger.info(cacheManager.getClass().getName());
+            logger.info("====================cacheManager:"+cacheManager.getClass().getName());
         }
     }
 

@@ -2,4 +2,3 @@ spring:
   cache:
     jcache:
       config: classpath:ehcache.xml
-      provider: org.ehcache.jsr107.EhcacheCachingProvider
