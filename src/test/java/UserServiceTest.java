@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -22,11 +23,15 @@ public class UserServiceTest {
     @Resource
     private UserService userService;
 
+    @Resource
+    private CacheManager cacheManager;
+
     @Test
     public void getByName(){
         for(int n=0;n<5;n++){
             UserBean userBean=userService.getByName("王五");
-            logger.info("get result:{}",userBean.toString());
+            logger.info("========get result:{}",userBean.toString());
+            logger.info(cacheManager.getClass().getName());
         }
     }
 
